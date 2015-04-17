@@ -23,7 +23,7 @@ class ObjectMapperTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
     func testBasicParsing() {
         let username = "John Doe"
         let identifier = "user8723"
@@ -37,16 +37,16 @@ class ObjectMapperTests: XCTestCase {
         let birthday = NSDate(timeIntervalSince1970: 1398956159)
         let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
         let directory = [
-            "key1" : "value1",
-            "key2" : false,
-            "key3" : 142
+                "key1" : "value1",
+                "key2" : false,
+                "key3" : 142
         ]
-        
+
         let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
-        
-        let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
-		
-		let user = userMapper.map(string: userJSONString)
+
+        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+
+		let user = userMapper.map(string: userJsonString)
 
         XCTAssertEqual(username, user.username, "Username should be the same")
         XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
@@ -61,8 +61,103 @@ class ObjectMapperTests: XCTestCase {
         XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
         XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
 
-        println(Mapper().toJSONString(user, prettyPrint: true))
+        println(Mapper().toJsonString(user, prettyPrint: true))
     }
+
+    func testDynamicSerialization() {
+        var user = DefaultUser()
+        user.username = "John Doe"
+        user.identifier = "user8723"
+        user.photoCount = 13
+        user.age = 1227
+        user.weight = 123.23
+        user.float = 123.231
+        user.drinker = true
+        user.smoker = false
+        user.arr = [ "bla", true, 42 ]
+
+        println(Mapper().toJsonString(user, prettyPrint: true))
+    }
+
+//    func testDynamicParsing() {
+//        let username = "John Doe"
+//        let identifier = "user8723"
+//        let photoCount = 13
+//        let age = 1227
+//        let weight = 123.23
+//        let float: Float = 123.231
+//        let drinker = true
+//        let smoker = false
+//        let arr = [ "bla", true, 42 ]
+//        let birthday = NSDate(timeIntervalSince1970: 1398956159)
+//        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
+//        let directory = [
+//                "key1" : "value1",
+//                "key2" : false,
+//                "key3" : 142
+//        ]
+//
+//        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+//
+//        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+//
+//        let user = Mapper<DynamicUser>().map(string: userJsonString)
+//
+//        XCTAssertEqual(username, user.username, "Username should be the same")
+//        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
+//        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
+//        XCTAssertEqual(age, user.age!, "Age should be the same")
+//        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
+//        XCTAssertEqual(float, user.float!, "float should be the same")
+//        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
+//        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
+//        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
+//        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
+//        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
+//        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
+//
+//        println(Mapper().toJsonString(user, prettyPrint: true))
+//    }
+//
+//    func testDefaultDynamicParsing() {
+//        let username = "John Doe"
+//        let identifier = "user8723"
+//        let photoCount = 13
+//        let age = 1227
+//        let weight = 123.23
+//        let float: Float = 123.231
+//        let drinker = true
+//        let smoker = false
+//        let arr = [ "bla", true, 42 ]
+//        let birthday = NSDate(timeIntervalSince1970: 1398956159)
+//        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
+//        let directory = [
+//                "key1" : "value1",
+//                "key2" : false,
+//                "key3" : 142
+//        ]
+//
+//        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthday_opt\" : 1398956159, \"y2k_opt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+//
+//        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photo_count\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arr_opt\":[ \"bla\", true, 42 ], \"dict_opt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friend_dictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+//
+//        let user = Mapper<DefaultUser>().map(string: userJsonString)
+//
+//        XCTAssertEqual(username, user.username, "Username should be the same")
+//        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
+//        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
+//        XCTAssertEqual(age, user.age!, "Age should be the same")
+//        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
+//        XCTAssertEqual(float, user.float!, "float should be the same")
+//        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
+//        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
+//        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
+//        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
+//        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
+//        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
+//
+//        println(Mapper().toJsonString(user, prettyPrint: true))
+//    }
 	
     func testInstanceParsing() {
         let username = "John Doe"
@@ -86,7 +181,7 @@ class ObjectMapperTests: XCTestCase {
         
         let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
         
-        let user = Mapper().map(string: userJSONString, toObject: User())
+        let user = Mapper().map(userJSONString, toObject: User())
         
         XCTAssertEqual(username, user.username, "Username should be the same")
         XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
@@ -101,7 +196,7 @@ class ObjectMapperTests: XCTestCase {
         XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
         XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
 
-        println(Mapper().toJSONString(user, prettyPrint: true))
+        println(Mapper().toJsonString(user, prettyPrint: true))
     }
     
     func testDictionaryParsing() {
@@ -168,7 +263,7 @@ class ObjectMapperTests: XCTestCase {
         user.imageURL = NSURL(string: "http://google.com/image/1234")
         user.intWithString = 12345
         
-        let jsonString = Mapper().toJSONString(user, prettyPrint: true)
+        let jsonString = Mapper().toJsonString(user, prettyPrint: true)
         println(jsonString)
 		var parsedUser = userMapper.map(string: jsonString)
         
@@ -206,7 +301,7 @@ class ObjectMapperTests: XCTestCase {
 		
 		let arrayJSONString = "[{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123},{ \"name\": \"\(name2)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC876\", \"major\": 54321,\"minor\": 13 }]"
 	
-		let students = Mapper<Student>().mapArray(string: arrayJSONString)
+		let students = Mapper<Student>().mapArray(arrayJSONString)
 
 		XCTAssert(!students.isEmpty, "Student Array should not be empty")
 		XCTAssert(students.count == 2, "There should be 2 students in array")
@@ -221,7 +316,7 @@ class ObjectMapperTests: XCTestCase {
 		
 		let arrayJSONString = "{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123}"
 		
-		let students = Mapper<Student>().mapArray(string: arrayJSONString)
+		let students = Mapper<Student>().mapArray(arrayJSONString)
 
 		XCTAssert(!students.isEmpty, "Student Array should not be empty")
 		XCTAssert(students.count == 1, "There should be 1 student in array")
@@ -301,7 +396,7 @@ class ObjectMapperTests: XCTestCase {
 		
 		var taskArray = [task1, task2, task3]
 		
-		let JSONArray = Mapper().toJSONArray(taskArray)
+		let JSONArray = Mapper().toJsonArray(taskArray)
 		println(JSONArray)
 		
 		let taskId1 = JSONArray[0]["taskId"] as! Int
@@ -325,13 +420,13 @@ class ObjectMapperTests: XCTestCase {
 
     func testISO8601DateTransformWithInvalidInput() {
         var JSON: [String: AnyObject] = ["y2kOpt": ""]
-        let user1 = userMapper.map(JSON)
+        let user1 = userMapper.map(json: JSON)
 
         XCTAssert(user1 != nil, "ISO8601DateTransform must not crash for empty string")
         XCTAssert(user1.y2kOpt == nil, "ISO8601DateTransform should return nil for empty string")
 
         JSON["y2kOpt"] = "incorrect format"
-        let user2 = userMapper.map(JSON)
+        let user2 = userMapper.map(json: JSON)
 
         XCTAssert(user2 != nil, "ISO8601DateTransform must not crash for incorrect format")
         XCTAssert(user2.y2kOpt == nil, "ISO8601DateTransform should return nil for incorrect format")
@@ -341,7 +436,7 @@ class ObjectMapperTests: XCTestCase {
         var json: [String: AnyObject] = ["dictStringString":["string": "string"], "dictStringBool":["string": false], "dictStringInt":["string": 1], "dictStringDouble":["string": 1.1], "dictStringFloat":["string": 1.2]]
         
         let mapper = Mapper<TestCollectionOfPrimitives>()
-        let testSet = mapper.map(json)
+        let testSet = mapper.map(json: json)
         
         XCTAssertTrue(testSet.dictStringString.count == 1)
         XCTAssertTrue(testSet.dictStringInt.count == 1)
@@ -358,7 +453,7 @@ class ObjectMapperTests: XCTestCase {
         object.dictStringDouble = ["string": 1.2]
         object.dictStringFloat = ["string": 1.3]
         
-        let json = Mapper<TestCollectionOfPrimitives>().toJSON(object)
+        let json = Mapper<TestCollectionOfPrimitives>().toJsonTree(object)
         
         XCTAssertTrue((json["dictStringString"] as! [String:String]).count == 1)
         XCTAssertTrue((json["dictStringBool"] as! [String:Bool]).count == 1)
@@ -375,8 +470,8 @@ class ObjectMapperTests: XCTestCase {
 		object.base = "base var"
 		object.sub = "sub var"
 		
-		let json = Mapper().toJSON(object)
-		let parsedObject = Mapper<Subclass>().map(json)
+		let json = Mapper().toJsonTree(object)
+		let parsedObject = Mapper<Subclass>().map(json: json)
 		
 		XCTAssert(object.base! == parsedObject.base!, "base class var was not mapped")
 		XCTAssert(object.sub! == parsedObject.sub!, "sub class var was not mapped")
@@ -387,8 +482,8 @@ class ObjectMapperTests: XCTestCase {
 		object.base = "base var"
 		object.sub = "sub var"
 		
-		let json = Mapper().toJSON(object)
-		let parsedObject = Mapper<GenericSubclass<String>>().map(json)
+		let json = Mapper().toJsonTree(object)
+		let parsedObject = Mapper<GenericSubclass<String>>().map(json: json)
 		
 		XCTAssert(object.base! == parsedObject.base!, "base class var was not mapped")
 		XCTAssert(object.sub! == parsedObject.sub!, "sub class var was not mapped")
@@ -399,9 +494,10 @@ class Response<T: Mappable>: Mappable {
 	var result: T?
 	
 	required init() {
+        super.init()
 	}
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		result <= map["result"]
 	}
 }
@@ -410,9 +506,10 @@ class Status: Mappable {
 	var status: Int?
 	
 	required init() {
+        super.init()
 	}
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		status <= map["code"]
 	}
 }
@@ -420,11 +517,11 @@ class Status: Mappable {
 class Plan: Mappable {
 	var tasks: [Task]?
 	
-	required init(){
-		
+	required init() {
+        super.init()
 	}
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		tasks <= map["tasks"]
 	}
 }
@@ -433,11 +530,11 @@ class Task: Mappable {
 	var taskId: Int?
 	var percentage: Double?
 	
-	required init(){
-		
+	required init() {
+        super.init()
 	}
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		taskId <= map["taskId"]
 		percentage <= map["percentage"]
 	}
@@ -448,33 +545,104 @@ class TaskDictionary: Mappable {
 	var tasks: [String : Task]?
 	
 	required init(){
-		
+        super.init()
 	}
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		test <= map["test"]
 		tasks <= map["tasks"]
 	}
 }
 
 
-// Confirm that struct can conform to `Mappable`
-struct Student: Mappable {
+// Confirm that struct can conform to `_Mappable`
+struct Student: _Mappable {
 	var name: String?
 	var UUID: String?
 	var major: Int?
 	var minor: Int?
-	
-	init(){
-		
+
+	init() {
+
 	}
-	
+
 	mutating func mapping(map: Map) {
 		name <= map["name"]
 		UUID <= map["UUID"]
 		major <= map["major"]
 		minor <= map["minor"]
 	}
+}
+
+class DynamicUser: Mappable {
+
+    var username: String = ""
+    var identifier: String?
+    var photoCount: Int = 0
+    var age: Int?
+    var weight: Double?
+    var float: Float?
+    var drinker: Bool = false
+    var smoker: Bool?
+    var arr: [AnyObject] = []
+    var arrOptional: [AnyObject]?
+    var dict: [String:AnyObject] = [:]
+    var dictOptional: [String:AnyObject]?
+    var dictString: [String:String]?
+    var friendDictionary: [String:User]?
+    var friend: User?
+    var friends: [User]? = []
+    var birthday: NSDate = NSDate()
+    var birthdayOpt: NSDate?
+    var y2k: NSDate = NSDate()
+    var y2kOpt: NSDate?
+    var imageURL: NSURL?
+    var intWithString: Int = 0
+    var heightInCM: Double?
+
+    required init() {
+        // Ensure that we serialize to a camel-case JSON string
+        super.init(namingPolicy: .CamelCase)
+    }
+
+    /* No need for mapping(map:) here, the fields are mapped automatically */
+}
+
+class DefaultUser: Mappable {
+
+    var username: String = ""
+    var identifier: String?
+    var photoCount: Int = 0
+    var age: Int?
+    var weight: Double?
+    var float: Float?
+    var drinker: Bool = false
+    var smoker: Bool?
+    var arr: [AnyObject] = []
+    var arrOptional: [AnyObject]?
+    var dict: [String:AnyObject] = [:]
+    var dictOptional: [String:AnyObject]?
+    var dictString: [String:String]?
+    var friendDictionary: [String:User]?
+    var friend: User?
+    var friends: [User]? = []
+    var birthday: NSDate = NSDate()
+    var birthdayOpt: NSDate?
+    var y2k: NSDate = NSDate()
+    var y2kOpt: NSDate?
+    var imageURL: NSURL?
+    // Using __ as a prefix, we can override the serialization name for the next field (intWithString)
+    // This is temporary until custom attributes (@serialize("")) become available in Swift and can be accessed using reflection
+    private var __string: String?
+    var intWithString: Int = 0
+    var heightInCM: Double?
+
+    /* Defaults to using lower-underscore as the serialization format */
+    required init(){
+        super.init()
+    }
+
+    /* No need for mapping(map:) here, the fields are mapped automatically */
 }
 
 class User: Mappable {
@@ -504,10 +672,10 @@ class User: Mappable {
 	var heightInCM: Double?
 	
     required init() {
-		
+        super.init()
     }
 	
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		username         <= map["username"]
 		identifier       <= map["identifier"]
 		photoCount       <= map["photoCount"]
@@ -550,9 +718,11 @@ class TestCollectionOfPrimitives : Mappable {
     var arrayDouble: [Double] = []
     var arrayFloat: [Float] = []
     
-    required init() {}
+    required init() {
+        super.init()
+    }
     
-    func mapping(map: Map) {
+    override func mapping(map: Map) {
         dictStringString    <= map["dictStringString"]
         dictStringBool      <= map["dictStringBool"]
         dictStringInt       <= map["dictStringInt"]
@@ -571,10 +741,10 @@ class Base: Mappable {
 	var base: String?
 	
 	required init(){
-		
+        super.init()
 	}
 
-	func mapping(map: Map) {
+	override func mapping(map: Map) {
 		base <= map["base"]
 	}
 }
@@ -584,7 +754,7 @@ class Subclass: Base {
 	var sub: String?
 	
 	required init(){
-		
+        super.init()
 	}
 	
 	override func mapping(map: Map) {
@@ -600,7 +770,7 @@ class GenericSubclass<T>: Base {
 	var sub: String?
 	
 	required init(){
-		
+        super.init()
 	}
 
 	override func mapping(map: Map) {
