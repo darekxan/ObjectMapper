@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.authors = { 'Tristan Himmelman' => 'tristanhimmelman@gmail.com' }
   s.source = { :git => 'https://github.com/Hearst-DD/ObjectMapper.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = ‘7.1’
+  s.ios.deployment_target = '7.1'
   s.osx.deployment_target = '10.9'
   s.requires_arc = 'true'
   s.source_files = 'ObjectMapper/**/*.swift'
