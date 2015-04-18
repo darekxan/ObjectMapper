@@ -62,7 +62,7 @@ class FromJSON<CollectionType> {
 
 	/// mappable object array
 	func objectArray<N: _Mappable>(inout field: Array<N>, object: AnyObject?) {
-		let parsedObjects = Mapper<N>().mapArray(object)
+		let parsedObjects = Mapper<N>().mapArray(object: object)
 
 		if let objects = parsedObjects {
 			field = objects
@@ -71,12 +71,12 @@ class FromJSON<CollectionType> {
 
 	/// optional mappable object array
 	func optionalObjectArray<N: _Mappable>(inout field: Array<N>?, object: AnyObject?) {
-		field = Mapper().mapArray(object)
+		field = Mapper().mapArray(object: object)
 	}
 
 	/// Implicitly unwrapped optional mappable object array
 	func optionalObjectArray<N: _Mappable>(inout field: Array<N>!, object: AnyObject?) {
-		field = Mapper().mapArray(object)
+		field = Mapper().mapArray(object: object)
 	}
 	
 	/// Dctionary containing Mappable objects

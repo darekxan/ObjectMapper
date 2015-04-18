@@ -5,6 +5,9 @@
 //  Created by Tristan Himmelman on 2014-10-09.
 //  Copyright (c) 2014 hearst. All rights reserved.
 //
+//  Modified by Trevor Boyer on 2015-04-17.
+//  Copyright (c) 2015 Trevor Boyer. All rights reserved.
+//
 
 import Foundation
 
@@ -46,7 +49,7 @@ public class Mappable : _Mappable {
         var serializeName: String?
 
         for index in 0 ..< reflect(self).count {
-            // INFO: The key represents the Json/XML version of the identifier, the value is the POSO version
+            // INFO: The key represents the Json version of the identifier, the value is the POSO version
             let value = reflect(self)[index].0
             // TODO: Include other naming policies
             var key = namingPolicy == .CamelCase ? value : CaseFormat().snakeCaseStringFromCamelCaseString(value)
@@ -58,9 +61,14 @@ public class Mappable : _Mappable {
                 // we'll need to handle this separately
                 // right now the else is only giving us the K/Vs from
                 // the current class. we need to also find a way to get
-                // them from the base class. <- INFO: May need this for Post subclasses - we would want to iterate through var classes
+                // them from the base class.
             } else if value.rangeOfString("__") != nil {
                 serializeName = value.stringByReplacingOccurrencesOfString("__", withString: "", options: NSStringCompareOptions.LiteralSearch, range: nil)
+
+                // '$' gets mapped as dot notation for nested objects
+                if serializeName!.rangeOfString("$") != nil {
+                    serializeName = serializeName!.stringByReplacingOccurrencesOfString("$", withString: ".", options: NSStringCompareOptions.LiteralSearch, range: nil)
+                }
             } else {
                 if serializeName != nil {
                     key = serializeName!
@@ -69,10 +77,10 @@ public class Mappable : _Mappable {
                 dictionary[key] = value
 
                 // FIXME: This is close - we have the object initialized with the correct data, but it doesn't get set to the current instance (self)
-                var object = reflect(self)[index].1.value
-                object <= map[key]
+                var field = reflect(self)[index].1.value
+                field <= map[key]
 
-                println(object)
+                println(field)
 
                 // Reset the serialize name
                 serializeName = nil
@@ -85,8 +93,21 @@ public class Mappable : _Mappable {
         self.map = map
     }
 
-    public func mapping() -> Map? {
-        return self.map
+    public func mapping() -> Map {
+        if self.map == nil {
+            self.map = Map(mappingType: .fromJSON, jsonDictionary: [:])
+        }
+        return self.map!
+    }
+
+    /**
+     * Provides the mapping between JSON and object fields as a Dictionary (allowing it to be used with frameworks such as RestKit).
+     *
+     * :returns: The dictionary containing the JSON-to-object mapping.
+     */
+    public func mappingDictionary() -> Dictionary<String, AnyObject> {
+        self.mapping(self.mapping())
+        return self.dictionary
     }
 }
 
@@ -111,10 +132,10 @@ public final class Map {
 	}
 	
 	/**
-	* Sets the current mapper value and key.
-	* 
-	* The Key paramater can be a period separated string (ex. "distance.value") to access sub objects.
-	*/
+	 * Sets the current mapper value and key.
+	 *
+	 * The Key paramater can be a period separated string (ex. "distance.value") to access sub objects.
+	 */
 	public subscript(key: String) -> Map {
 		// save key and value associated to it
 		currentKey = key
@@ -126,8 +147,8 @@ public final class Map {
 }
 
 /**
-* Fetch value from JSON dictionary, loop through them until we reach the desired object.
-*/
+ * Fetch value from JSON dictionary, loop through them until we reach the desired object.
+ */
 private func valueFor(keyPathComponents: [String], dictionary: [String : AnyObject]) -> AnyObject? {
 	// Implement it as a tail recursive function.
 
@@ -153,11 +174,18 @@ private func valueFor(keyPathComponents: [String], dictionary: [String : AnyObje
 }
 
 /**
-* The Mapper class provides methods for converting Model objects to JSON and methods for converting JSON to Model objects
-*/
+ * The Mapper class provides methods for converting Model objects to JSON and methods for converting JSON to Model objects
+ */
 public final class Mapper<N: _Mappable> {
 
+    private var keyPath: String?
+
 	public init() { }
+
+    // TODO: Allows the mapper to accept a "keyPath" to use as the base for the parsing - update all methods to support this
+    public init(keyPath: String) {
+        self.keyPath = keyPath
+    }
 	
 	// MARK: Public Mapping functions
 	
@@ -222,10 +250,22 @@ public final class Mapper<N: _Mappable> {
 	/**
 	 * Maps a JSON array to an object that conforms to Mappable
 	 */
-	public func mapArray(string: String) -> [N] {
-		let json: AnyObject? = parseJsonString(string)
+	public func mapArray(string jsonString: String) -> [N] {
+        if keyPath != nil {
+            if let object = objectAtKeyPath(jsonString) {
+                if let array = self.mapArray(object: object) {
+                    return array
+                }
 
-		if let objectArray = mapArray(json) {
+                return []
+            }
+
+            return []
+        }
+
+		let json: AnyObject? = parseJsonString(jsonString)
+
+		if let objectArray = mapArray(object: json) {
 			return objectArray
 		}
 
@@ -240,7 +280,7 @@ public final class Mapper<N: _Mappable> {
 
 	/// Maps a JSON object to an array of Mappable objects if it is an array of
 	/// JSON dictionary, or returns nil.
-	public func mapArray(json: AnyObject?) -> [N]? {
+	public func mapArray(object json: AnyObject?) -> [N]? {
 		if let array = json as? [[String : AnyObject]] {
 			return mapArray(array)
 		}
@@ -288,10 +328,17 @@ public final class Mapper<N: _Mappable> {
 		object.mapping(map)
 		return map.jsonDictionary
 	}
+
+    /**
+     * Maps a JSON String to a JSON dictionary <String : AnyObject>
+     */
+    public func toJsonTree(string json: String) -> [String : AnyObject]? {
+        return parseJsonDictionary(json)
+    }
 	
 	/** 
-	* Maps an array of Objects to an array of JSON dictionaries [[String : AnyObject]]
-	*/
+	 * Maps an array of Objects to an array of JSON dictionaries [[String : AnyObject]]
+	 */
 	public func toJsonArray(array: [N]) -> [[String : AnyObject]] {
 		return array.map {
 			// convert every element in array to JSON dictionary equivalent
@@ -300,8 +347,8 @@ public final class Mapper<N: _Mappable> {
 	}
 
 	/**
-	* Maps a dictionary of Objects that conform to Mappable to a JSON dictionary of dictionaries.
-	*/
+	 * Maps a dictionary of Objects that conform to Mappable to a JSON dictionary of dictionaries.
+	 */
 	public func toJsonDictionary(dictionary: [String : N]) -> [String : [String : AnyObject]] {
 		return dictionary.map { k, v in
 			// convert every value in dictionary to its JSON dictionary equivalent			
@@ -310,8 +357,8 @@ public final class Mapper<N: _Mappable> {
 	}
 
 	/** 
-	* Maps an Object to a JSON string
-	*/
+	 * Maps an Object to a JSON string
+	 */
 	public func toJsonString(object: N, prettyPrint: Bool) -> String! {
 		let dictionary = toJsonTree(object)
 
@@ -334,16 +381,16 @@ public final class Mapper<N: _Mappable> {
 	// MARK: Private utility functions for converting strings to JSON objects
 	
 	/** 
-	* Convert a JSON String into a Dictionary<String, AnyObject> using NSJSONSerialization 
-	*/
+	 * Convert a JSON String into a Dictionary<String, AnyObject> using NSJSONSerialization
+	 */
 	private func parseJsonDictionary(json: String) -> [String : AnyObject]? {
 		let parsedJson: AnyObject? = parseJsonString(json)
 		return parseJsonDictionary(parsedJson)
 	}
 
 	/**
-	* Convert a JSON Object into a Dictionary<String, AnyObject> using NSJSONSerialization
-	*/
+	 * Convert a JSON Object into a Dictionary<String, AnyObject> using NSJSONSerialization
+	 */
 	private func parseJsonDictionary(json: AnyObject?) -> [String : AnyObject]? {
 		if let dictionary = json as? [String : AnyObject] {
 			return dictionary
@@ -353,8 +400,8 @@ public final class Mapper<N: _Mappable> {
 	}
 
 	/**
-	* Convert a JSON String into an Object using NSJSONSerialization 
-	*/
+	 * Convert a JSON String into an Object using NSJSONSerialization
+	 */
 	private func parseJsonString(json: String) -> AnyObject? {
 		let data = json.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
 		if let data = data {
@@ -365,6 +412,17 @@ public final class Mapper<N: _Mappable> {
 
 		return nil
 	}
+
+    /**
+     * Pulls the JSON object/array/field at the specified key path (set using init(keyPath:))
+     */
+    private func objectAtKeyPath(json: String) -> AnyObject? {
+        if let jsonTree = self.toJsonTree(string: json) {
+            return jsonTree[self.keyPath!]
+        }
+
+        return nil
+    }
 }
 
 extension Dictionary {

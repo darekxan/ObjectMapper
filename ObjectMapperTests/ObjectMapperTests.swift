@@ -79,85 +79,85 @@ class ObjectMapperTests: XCTestCase {
         println(Mapper().toJsonString(user, prettyPrint: true))
     }
 
-//    func testDynamicParsing() {
-//        let username = "John Doe"
-//        let identifier = "user8723"
-//        let photoCount = 13
-//        let age = 1227
-//        let weight = 123.23
-//        let float: Float = 123.231
-//        let drinker = true
-//        let smoker = false
-//        let arr = [ "bla", true, 42 ]
-//        let birthday = NSDate(timeIntervalSince1970: 1398956159)
-//        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
-//        let directory = [
-//                "key1" : "value1",
-//                "key2" : false,
-//                "key3" : 142
-//        ]
-//
-//        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
-//
-//        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
-//
-//        let user = Mapper<DynamicUser>().map(string: userJsonString)
-//
-//        XCTAssertEqual(username, user.username, "Username should be the same")
-//        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
-//        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
-//        XCTAssertEqual(age, user.age!, "Age should be the same")
-//        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
-//        XCTAssertEqual(float, user.float!, "float should be the same")
-//        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
-//        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
-//        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
-//        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
-//        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
-//        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
-//
-//        println(Mapper().toJsonString(user, prettyPrint: true))
-//    }
-//
-//    func testDefaultDynamicParsing() {
-//        let username = "John Doe"
-//        let identifier = "user8723"
-//        let photoCount = 13
-//        let age = 1227
-//        let weight = 123.23
-//        let float: Float = 123.231
-//        let drinker = true
-//        let smoker = false
-//        let arr = [ "bla", true, 42 ]
-//        let birthday = NSDate(timeIntervalSince1970: 1398956159)
-//        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
-//        let directory = [
-//                "key1" : "value1",
-//                "key2" : false,
-//                "key3" : 142
-//        ]
-//
-//        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthday_opt\" : 1398956159, \"y2k_opt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
-//
-//        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photo_count\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arr_opt\":[ \"bla\", true, 42 ], \"dict_opt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friend_dictionary\":{ \"bestFriend\": \(subUserJSON)}}"
-//
-//        let user = Mapper<DefaultUser>().map(string: userJsonString)
-//
-//        XCTAssertEqual(username, user.username, "Username should be the same")
-//        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
-//        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
-//        XCTAssertEqual(age, user.age!, "Age should be the same")
-//        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
-//        XCTAssertEqual(float, user.float!, "float should be the same")
-//        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
-//        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
-//        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
-//        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
-//        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
-//        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
-//
-//        println(Mapper().toJsonString(user, prettyPrint: true))
-//    }
+    func testDynamicParsing() {
+        let username = "John Doe"
+        let identifier = "user8723"
+        let photoCount = 13
+        let age = 1227
+        let weight = 123.23
+        let float: Float = 123.231
+        let drinker = true
+        let smoker = false
+        let arr = [ "bla", true, 42 ]
+        let birthday = NSDate(timeIntervalSince1970: 1398956159)
+        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
+        let directory = [
+                "key1" : "value1",
+                "key2" : false,
+                "key3" : 142
+        ]
+
+        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+
+        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+
+        let user = Mapper<DynamicUser>().map(string: userJsonString)
+
+        XCTAssertEqual(username, user.username, "Username should be the same")
+        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
+        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
+        XCTAssertEqual(age, user.age!, "Age should be the same")
+        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
+        XCTAssertEqual(float, user.float!, "float should be the same")
+        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
+        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
+        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
+        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
+        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
+        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
+
+        println(Mapper().toJsonString(user, prettyPrint: true))
+    }
+
+    func testDefaultDynamicParsing() {
+        let username = "John Doe"
+        let identifier = "user8723"
+        let photoCount = 13
+        let age = 1227
+        let weight = 123.23
+        let float: Float = 123.231
+        let drinker = true
+        let smoker = false
+        let arr = [ "bla", true, 42 ]
+        let birthday = NSDate(timeIntervalSince1970: 1398956159)
+        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
+        let directory = [
+                "key1" : "value1",
+                "key2" : false,
+                "key3" : 142
+        ]
+
+        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthday_opt\" : 1398956159, \"y2k_opt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+
+        let userJsonString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photo_count\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arr_opt\":[ \"bla\", true, 42 ], \"dict_opt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friend_dictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+
+        let user = Mapper<DefaultUser>().map(string: userJsonString)
+
+        XCTAssertEqual(username, user.username, "Username should be the same")
+        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
+        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
+        XCTAssertEqual(age, user.age!, "Age should be the same")
+        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
+        XCTAssertEqual(float, user.float!, "float should be the same")
+        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
+        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
+        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
+        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
+        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
+        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
+
+        println(Mapper().toJsonString(user, prettyPrint: true))
+    }
 	
     func testInstanceParsing() {
         let username = "John Doe"
@@ -301,7 +301,7 @@ class ObjectMapperTests: XCTestCase {
 		
 		let arrayJSONString = "[{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123},{ \"name\": \"\(name2)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC876\", \"major\": 54321,\"minor\": 13 }]"
 	
-		let students = Mapper<Student>().mapArray(arrayJSONString)
+		let students = Mapper<Student>().mapArray(string: arrayJSONString)
 
 		XCTAssert(!students.isEmpty, "Student Array should not be empty")
 		XCTAssert(students.count == 2, "There should be 2 students in array")
@@ -316,7 +316,7 @@ class ObjectMapperTests: XCTestCase {
 		
 		let arrayJSONString = "{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123}"
 		
-		let students = Mapper<Student>().mapArray(arrayJSONString)
+		let students = Mapper<Student>().mapArray(string: arrayJSONString)
 
 		XCTAssert(!students.isEmpty, "Student Array should not be empty")
 		XCTAssert(students.count == 1, "There should be 1 student in array")
