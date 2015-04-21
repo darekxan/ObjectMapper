@@ -6,9 +6,10 @@
 //  Copyright (c) 2014 hearst. All rights reserved.
 //
 
-import UIKit
+import Foundation
 import XCTest
 import ObjectMapper
+import Nimble
 
 class ObjectMapperTests: XCTestCase {
 
@@ -23,7 +24,26 @@ class ObjectMapperTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
+	func testImmutableMappable() {
+		let mapper = Mapper<Immutable>()
+		let JSON = [ "prop1": "Immutable!", "prop2": 255, "prop3": true ]
+
+		let immutable: Immutable! = mapper.map(JSON)
+		expect(immutable).notTo(beNil())
+		expect(immutable?.prop1).to(equal("Immutable!"))
+		expect(immutable?.prop2).to(equal(255))
+		expect(immutable?.prop3).to(equal(true))
+		expect(immutable?.prop4).to(equal(DBL_MAX))
+
+		let JSON2 = [ "prop1": "prop1", "prop2": NSNull() ]
+		let immutable2 = mapper.map(JSON2)
+		expect(immutable2).to(beNil())
+
+		let JSONFromObject = mapper.toJSON(immutable)
+		expect(mapper.map(JSONFromObject)).to(equal(immutable))
+	}
+
     func testBasicParsing() {
         let username = "John Doe"
         let identifier = "user8723"
@@ -34,36 +54,31 @@ class ObjectMapperTests: XCTestCase {
         let drinker = true
         let smoker = false
         let arr = [ "bla", true, 42 ]
-        let birthday = NSDate(timeIntervalSince1970: 1398956159)
-        let y2k = NSDate(timeIntervalSince1970: 946684800) // calculated via http://wolfr.am/2pliY~W9
         let directory = [
             "key1" : "value1",
             "key2" : false,
             "key3" : 142
         ]
         
-        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"username\" : \"sub user\" }"
         
-        let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+        let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+
+		let user = userMapper.map(userJSONString)!
 		
-		let user = userMapper.map(string: userJSONString)
+		expect(user).notTo(beNil())
+		expect(username).to(equal(user.username))
+		expect(identifier).to(equal(user.identifier))
+		expect(photoCount).to(equal(user.photoCount))
+		expect(age).to(equal(user.age))
+		expect(weight).to(equal(user.weight))
+		expect(float).to(equal(user.float))
+		expect(drinker).to(equal(user.drinker))
+		expect(smoker).to(equal(user.smoker))
 
-        XCTAssertEqual(username, user.username, "Username should be the same")
-        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
-        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
-        XCTAssertEqual(age, user.age!, "Age should be the same")
-        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
-        XCTAssertEqual(float, user.float!, "float should be the same")
-        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
-        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
-        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
-        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
-        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
-        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
-
-        println(Mapper().toJSONString(user, prettyPrint: true))
+		//println(Mapper().toJSONString(user, prettyPrint: true))
     }
-	
+
     func testInstanceParsing() {
         let username = "John Doe"
         let identifier = "user8723"
@@ -74,34 +89,27 @@ class ObjectMapperTests: XCTestCase {
         let drinker = true
         let smoker = false
         let arr = [ "bla", true, 42 ]
-        let birthday = NSDate(timeIntervalSince1970: 1398956159)
-        let y2k = NSDate(timeIntervalSince1970: 946684800)
         let directory = [
             "key1" : "value1",
             "key2" : false,
             "key3" : 142
         ]
         
-        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17,\"birthdayOpt\" : 1398956159, \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"username\" : \"sub user\" }"
+        let subUserJSON = "{\"identifier\" : \"user8723\", \"drinker\" : true, \"age\": 17, \"username\" : \"sub user\" }"
         
-        let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"birthday\": 1398956159, \"birthdayOpt\": 1398956159, \"y2k\" : \"2000-01-01T00:00:00Z\", \"y2kOpt\" : \"2000-01-01T00:00:00Z\", \"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
+        let userJSONString = "{\"username\":\"\(username)\",\"identifier\":\"\(identifier)\",\"photoCount\":\(photoCount),\"age\":\(age),\"drinker\":\(drinker),\"smoker\":\(smoker), \"arr\":[ \"bla\", true, 42 ], \"dict\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 }, \"arrOpt\":[ \"bla\", true, 42 ], \"dictOpt\":{ \"key1\" : \"value1\", \"key2\" : false, \"key3\" : 142 },\"weight\": \(weight), \"float\": \(float), \"friend\": \(subUserJSON), \"friendDictionary\":{ \"bestFriend\": \(subUserJSON)}}"
         
-        let user = Mapper().map(string: userJSONString, toObject: User())
-        
-        XCTAssertEqual(username, user.username, "Username should be the same")
-        XCTAssertEqual(identifier, user.identifier!, "Identifier should be the same")
-        XCTAssertEqual(photoCount, user.photoCount, "PhotoCount should be the same")
-        XCTAssertEqual(age, user.age!, "Age should be the same")
-        XCTAssertEqual(weight, user.weight!, "Weight should be the same")
-        XCTAssertEqual(float, user.float!, "float should be the same")
-        XCTAssertEqual(drinker, user.drinker, "Drinker should be the same")
-        XCTAssertEqual(smoker, user.smoker!, "Smoker should be the same")
-        XCTAssertEqual(birthday, user.birthday, "Birthday should be the same")
-        XCTAssertEqual(birthday, user.birthdayOpt!, "Birthday should be the same")
-        XCTAssertEqual(y2k, user.y2k, "Y2K date should be the same")
-        XCTAssertEqual(y2k, user.y2kOpt!, "Y2K date should be the same")
+        let user = Mapper().map(userJSONString, toObject: User())
 
-        println(Mapper().toJSONString(user, prettyPrint: true))
+		expect(username).to(equal(user.username))
+		expect(identifier).to(equal(user.identifier))
+		expect(photoCount).to(equal(user.photoCount))
+		expect(age).to(equal(user.age))
+		expect(weight).to(equal(user.weight))
+		expect(float).to(equal(user.float))
+		expect(drinker).to(equal(user.drinker))
+		expect(smoker).to(equal(user.smoker))
+        //println(Mapper().toJSONString(user, prettyPrint: true))
     }
     
     func testDictionaryParsing() {
@@ -116,12 +124,12 @@ class ObjectMapperTests: XCTestCase {
         var s = Student()
         s.minor = minor
         let student = Mapper().map(json, toObject: s)
-        
-        XCTAssertEqual(student.name!, name, "Names should be the same")
-        XCTAssertEqual(student.UUID!, UUID, "UUID should be the same")
-        XCTAssertEqual(student.major!, major, "major should be the same")
-        XCTAssertEqual(student.minor!, minor, "minor should be the same")
-        
+
+		expect(student.name).to(equal(name))
+		expect(student.UUID).to(equal(UUID))
+		expect(student.major).to(equal(major))
+		expect(student.minor).to(equal(minor))
+
         //Test that mapping a reference type works as expected while not relying on the return value
         var username: String = "Barack Obama"
         var identifier: String = "Political"
@@ -130,27 +138,53 @@ class ObjectMapperTests: XCTestCase {
         let json2: [String: AnyObject] = ["username": username, "identifier": identifier, "photoCount": photoCount]
         let user = User()
         Mapper().map(json2, toObject: user)
-        XCTAssertEqual(user.username, username, "Usernames should be the same")
-        XCTAssertEqual(user.identifier!, identifier, "identifiers should be the same")
-        XCTAssertEqual(user.photoCount, photoCount, "photo count should be the same")
+		expect(user.username).to(equal(username))
+		expect(user.identifier).to(equal(identifier))
+		expect(user.photoCount).to(equal(photoCount))
     }
     
-	func testNestedKeys(){
-		let heightInCM = 180.0
-		
-		let userJSONString = "{\"username\":\"bob\", \"height\": {\"value\": \(heightInCM), \"text\": \"6 feet tall\"} }"
-		
-		let user = userMapper.map(string: userJSONString)
+	func testNullObject() {
+		let JSONString = "{\"username\":\"bob\"}"
 
-		XCTAssertEqual(user.heightInCM!, heightInCM, "Username should be the same")
+		let user = userMapper.map(JSONString)
+		expect(user).notTo(beNil())
+		expect(user?.age).to(beNil())
 	}
 	
-	func testNullObject() {
-		let userJSONString = "{\"username\":\"bob\"}"
+	func testToObjectFromString() {
+		let username = "bob"
+		let JSONString = "{\"username\":\"\(username)\"}"
 		
-		let user = userMapper.map(string: userJSONString)
+		var user = User()
+		user.username = "Tristan"
 		
-		XCTAssert(user.heightInCM == nil, "Username should be the same")
+		Mapper().map(JSONString, toObject: user)
+
+		expect(user.username).to(equal(username))
+	}
+	
+	func testToObjectFromJSON() {
+		let username = "bob"
+		let JSON = ["username": username]
+		
+		var user = User()
+		user.username = "Tristan"
+		
+		Mapper().map(JSON, toObject: user)
+
+		expect(user.username).to(equal(username))
+	}
+	
+	func testToObjectFromAnyObject() {
+		let username = "bob"
+		let userJSON = ["username": username]
+		
+		var user = User()
+		user.username = "Tristan"
+		
+		Mapper().map(userJSON as AnyObject?, toObject: user)
+
+		expect(user.username).to(equal(username))
 	}
 	
     func testToJSONAndBack(){
@@ -163,55 +197,48 @@ class ObjectMapperTests: XCTestCase {
         user.drinker = true
         user.smoker = false
         user.arr = ["cheese", 11234]
-        user.birthday = NSDate()
-        user.y2k = NSDate(timeIntervalSince1970: 946684800)
-        user.imageURL = NSURL(string: "http://google.com/image/1234")
-        user.intWithString = 12345
         
-        let jsonString = Mapper().toJSONString(user, prettyPrint: true)
-        println(jsonString)
-		var parsedUser = userMapper.map(string: jsonString)
-        
-		
-        XCTAssertEqual(user.identifier!, parsedUser.identifier!, "Identifier should be the same")
-        XCTAssertEqual(user.photoCount, parsedUser.photoCount, "PhotoCount should be the same")
-        XCTAssertEqual(user.age!, parsedUser.age!, "Age should be the same")
-        XCTAssertEqual(user.weight!, parsedUser.weight!, "Weight should be the same")
-        XCTAssertEqual(user.drinker, parsedUser.drinker, "Drinker should be the same")
-        XCTAssertEqual(user.smoker!, parsedUser.smoker!, "Smoker should be the same")
-        XCTAssertEqual(user.imageURL!, parsedUser.imageURL!, "Image URL should be the same")
-        XCTAssertEqual(user.intWithString, parsedUser.intWithString, "Int value from/to String should be the same")
-//        XCTAssert(user.birthday.compare(parsedUser.birthday) == .OrderedSame, "Birthday should be the same")
-        XCTAssert(user.y2k.compare(parsedUser.y2k) == .OrderedSame, "Y2k should be the same")
+        let JSONString = Mapper().toJSONString(user, prettyPrint: true)
+        //println(JSONString)
+
+		let parsedUser = userMapper.map(JSONString!)!
+		expect(parsedUser).notTo(beNil())
+		expect(user.identifier).to(equal(parsedUser.identifier))
+		expect(user.photoCount).to(equal(parsedUser.photoCount))
+		expect(user.age).to(equal(parsedUser.age))
+		expect(user.weight).to(equal(parsedUser.weight))
+		expect(user.drinker).to(equal(parsedUser.drinker))
+		expect(user.smoker).to(equal(parsedUser.smoker))
     }
 
     func testUnknownPropertiesIgnored() {
-        let userJSONString = "{\"username\":\"bob\",\"identifier\":\"bob1987\", \"foo\" : \"bar\", \"fooArr\" : [ 1, 2, 3], \"fooObj\" : { \"baz\" : \"qux\" } }"
-        let user = userMapper.map(string: userJSONString)
-        
-        XCTAssert(user != nil, "User should not be nil")
+        let JSONString = "{\"username\":\"bob\",\"identifier\":\"bob1987\", \"foo\" : \"bar\", \"fooArr\" : [ 1, 2, 3], \"fooObj\" : { \"baz\" : \"qux\" } }"
+
+		let user = userMapper.map(JSONString)
+
+		expect(user).notTo(beNil())
     }
     
     func testInvalidJsonResultsInNilObject() {
-        let userJSONString = "{\"username\":\"bob\",\"identifier\":\"bob1987\"" // missing ending brace
+        let JSONString = "{\"username\":\"bob\",\"identifier\":\"bob1987\"" // missing ending brace
 
-        let user = userMapper.map(string: userJSONString)
-		
-        XCTAssert(user == nil, "User should be nil due to invalid JSON")
+        let user = userMapper.map(JSONString)
+
+		expect(user).to(beNil())
     }
 	
 	func testMapArrayJSON(){
 		let name1 = "Bob"
 		let name2 = "Jane"
 		
-		let arrayJSONString = "[{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123},{ \"name\": \"\(name2)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC876\", \"major\": 54321,\"minor\": 13 }]"
+		let JSONString = "[{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123},{ \"name\": \"\(name2)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC876\", \"major\": 54321,\"minor\": 13 }]"
 	
-		let students = Mapper<Student>().mapArray(string: arrayJSONString)
+		let students = Mapper<Student>().mapArray(JSONString)
 
-		XCTAssert(!students.isEmpty, "Student Array should not be empty")
-		XCTAssert(students.count == 2, "There should be 2 students in array")
-		XCTAssert(students[0].name == name1, "First student's does not match")
-		XCTAssert(students[1].name == name2, "Second student's does not match")
+		expect(students).notTo(beEmpty())
+		expect(students.count).to(equal(2))
+		expect(students[0].name).to(equal(name1))
+		expect(students[1].name).to(equal(name2))
 	}
 
 	// test mapArray() with JSON string that is not an array form
@@ -219,73 +246,62 @@ class ObjectMapperTests: XCTestCase {
 	func testMapArrayJSONWithNoArray(){
 		let name1 = "Bob"
 		
-		let arrayJSONString = "{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123}"
+		let JSONString = "{\"name\": \"\(name1)\", \"UUID\": \"3C074D4B-FC8C-4CA2-82A9-6E9367BBC875\", \"major\": 541, \"minor\": 123}"
 		
-		let students = Mapper<Student>().mapArray(string: arrayJSONString)
+		let students = Mapper<Student>().mapArray(JSONString)
 
-		XCTAssert(!students.isEmpty, "Student Array should not be empty")
-		XCTAssert(students.count == 1, "There should be 1 student in array")
-		XCTAssert(students[0].name == name1, "First student's does not match")
+		expect(students).notTo(beEmpty())
+		expect(students.count).to(equal(1))
+		expect(students[0].name).to(equal(name1))
 	}
 
 	func testArrayOfCustomObjects(){
 		let percentage1: Double = 0.1
 		let percentage2: Double = 1792.41
 		
-		let JSON = "{ \"tasks\": [{\"taskId\":103,\"percentage\":\(percentage1)},{\"taskId\":108,\"percentage\":\(percentage2)}] }"
+		let JSONString = "{ \"tasks\": [{\"taskId\":103,\"percentage\":\(percentage1)},{\"taskId\":108,\"percentage\":\(percentage2)}] }"
 		
-		let plan = Mapper<Plan>().map(string: JSON)
-		
-		if let tasks = plan.tasks {
-			let task1 = tasks[0]
-			XCTAssertEqual(task1.percentage!, percentage1, "Percentage 1 should be the same")
-			
-			let task2 = tasks[1]
-			XCTAssertEqual(task2.percentage!, percentage2, "Percentage 2 should be the same")
-		} else {
-			XCTAssert(false, "Tasks not mapped")
-		}
+		let plan = Mapper<Plan>().map(JSONString)
+
+		let tasks = plan?.tasks
+		expect(tasks).notTo(beNil())
+		expect(tasks?[0].percentage).to(equal(percentage1))
+		expect(tasks?[1].percentage).to(equal(percentage2))
 	}
 	
 	func testDictionaryOfCustomObjects(){
 		let percentage1: Double = 0.1
 		let percentage2: Double = 1792.41
 		
-		let JSON = "{\"tasks\": { \"task1\": {\"taskId\":103,\"percentage\":\(percentage1)}, \"task2\": {\"taskId\":108,\"percentage\":\(percentage2)}}}"
+		let JSONString = "{\"tasks\": { \"task1\": {\"taskId\":103,\"percentage\":\(percentage1)}, \"task2\": {\"taskId\":108,\"percentage\":\(percentage2)}}}"
 		
-		let taskDict = Mapper<TaskDictionary>().map(string: JSON)
-		if let task = taskDict.tasks?["task1"] {
-			XCTAssertEqual(task.percentage!, percentage1, "Percentage 1 should be the same")
-		} else {
-			XCTAssert(false, "Dictionary not mapped")
-		}
+		let taskDict = Mapper<TaskDictionary>().map(JSONString)
+		
+		let task = taskDict?.tasks?["task1"]
+		expect(task).notTo(beNil())
+		expect(task?.percentage).to(equal(percentage1))
 	}
 	
 	func testDoubleParsing(){
 		let percentage1: Double = 1792.41
 		
-		let JSON = "{\"taskId\":103,\"percentage\":\(percentage1)}"
+		let JSONString = "{\"taskId\":103,\"percentage\":\(percentage1)}"
 		
-		let task = Mapper<Task>().map(string: JSON)
-		
-		if let task = task {
-			XCTAssertEqual(task.percentage!, percentage1, "Percentage 1 should be the same")
-		} else {
-			XCTAssert(false, "Task not mapped")
-		}
+		let task = Mapper<Task>().map(JSONString)
+
+		expect(task).notTo(beNil())
+		expect(task?.percentage).to(equal(percentage1))
 	}
 	
 	func testMappingAGenericObject(){
 		let code: Int = 22
-		let JSON = "{\"result\":{\"code\":\(code)}}"
+		let JSONString = "{\"result\":{\"code\":\(code)}}"
 		
-		let response = Mapper<Response<Status>>().map(string: JSON)
-		
-		if let status = response.result?.status {
-			XCTAssertEqual(status, code, "Code was not mapped correctly")
-		} else {
-			XCTAssert(false, "Generic object FAILED to map")
-		}
+		let response = Mapper<Response<Status>>().map(JSONString)
+
+		let status = response?.result?.status
+		expect(status).notTo(beNil())
+		expect(status).to(equal(code))
 	}
 
 	func testToJSONArray(){
@@ -302,25 +318,24 @@ class ObjectMapperTests: XCTestCase {
 		var taskArray = [task1, task2, task3]
 		
 		let JSONArray = Mapper().toJSONArray(taskArray)
-		println(JSONArray)
 		
-		let taskId1 = JSONArray[0]["taskId"] as! Int
-		let percentage1 = JSONArray[0]["percentage"] as! Double
-		
-		XCTAssertEqual(taskId1, task1.taskId!, "TaskId1 was not mapped correctly")
-		XCTAssertEqual(percentage1, task1.percentage!, "percentage1 was not mapped correctly")
+		let taskId1 = JSONArray[0]["taskId"] as? Int
+		let percentage1 = JSONArray[0]["percentage"] as? Double
 
-		let taskId2 = JSONArray[1]["taskId"] as! Int
-		let percentage2 = JSONArray[1]["percentage"] as! Double
+		expect(taskId1).to(equal(task1.taskId))
+		expect(percentage1).to(equal(task1.percentage))
+
+		let taskId2 = JSONArray[1]["taskId"] as? Int
+		let percentage2 = JSONArray[1]["percentage"] as? Double
 		
-		XCTAssertEqual(taskId2, task2.taskId!, "TaskId2 was not mapped correctly")
-		XCTAssertEqual(percentage2, task2.percentage!, "percentage2 was not mapped correctly")
+		expect(taskId2).to(equal(task2.taskId))
+		expect(percentage2).to(equal(task2.percentage))
+
+		let taskId3 = JSONArray[2]["taskId"] as? Int
+		let percentage3 = JSONArray[2]["percentage"] as? Double
 		
-		let taskId3 = JSONArray[2]["taskId"] as! Int
-		let percentage3 = JSONArray[2]["percentage"] as! Double
-		
-		XCTAssertEqual(taskId3, task3.taskId!, "TaskId3 was not mapped correctly")
-		XCTAssertEqual(percentage3, task3.percentage!, "percentage3 was not mapped correctly")
+		expect(taskId3).to(equal(task3.taskId))
+		expect(percentage3).to(equal(task3.percentage))
 	}
 
     func testISO8601DateTransformWithInvalidInput() {
@@ -377,9 +392,9 @@ class ObjectMapperTests: XCTestCase {
 		
 		let json = Mapper().toJSON(object)
 		let parsedObject = Mapper<Subclass>().map(json)
-		
-		XCTAssert(object.base! == parsedObject.base!, "base class var was not mapped")
-		XCTAssert(object.sub! == parsedObject.sub!, "sub class var was not mapped")
+
+		expect(object.base).to(equal(parsedObject?.base))
+		expect(object.sub).to(equal(parsedObject?.sub))
 	}
 
 	func testGenericSubclass() {
@@ -389,57 +404,119 @@ class ObjectMapperTests: XCTestCase {
 		
 		let json = Mapper().toJSON(object)
 		let parsedObject = Mapper<GenericSubclass<String>>().map(json)
-		
-		XCTAssert(object.base! == parsedObject.base!, "base class var was not mapped")
-		XCTAssert(object.sub! == parsedObject.sub!, "sub class var was not mapped")
+
+		expect(object.base).to(equal(parsedObject?.base))
+		expect(object.sub).to(equal(parsedObject?.sub))
 	}
+	
+	func testSubclassWithGenericArrayInSuperclass() {
+		let JSONString = "{\"genericItems\":[{\"value\":\"value0\"}, {\"value\":\"value1\"}]}"
+
+		let parsedObject = Mapper<SubclassWithGenericArrayInSuperclass<AnyObject>>().map(JSONString)
+
+		let genericItems = parsedObject?.genericItems
+		expect(genericItems).notTo(beNil())
+		expect(genericItems?[0].value).to(equal("value0"))
+		expect(genericItems?[1].value).to(equal("value1"))
+	}
+}
+
+struct Immutable: Equatable {
+	let prop1: String
+	let prop2: Int
+	let prop3: Bool
+	let prop4: Double
+}
+
+extension Immutable: Mappable {
+	init?(_ map: Map) {
+		prop1 = map["prop1"].valueOrFail()
+		prop2 = map["prop2"].valueOrFail()
+		prop3 = map["prop3"].valueOrFail()
+		prop4 = map["prop4"].valueOr(DBL_MAX)
+
+		if !map.isValid {
+			return nil
+		}
+	}
+
+	mutating func mapping(map: Map) {
+		switch map.mappingType {
+		case .FromJSON:
+			if let x = Immutable(map) {
+				self = x
+			}
+
+		case .ToJSON:
+			var prop1 = self.prop1
+			var prop2 = self.prop2
+			var prop3 = self.prop3
+			var prop4 = self.prop4
+
+			prop1 <- map["prop1"]
+			prop2 <- map["prop2"]
+			prop3 <- map["prop3"]
+			prop4 <- map["prop4"]
+		}
+	}
+}
+
+func ==(lhs: Immutable, rhs: Immutable) -> Bool {
+	return lhs.prop1 == rhs.prop1
+		&& lhs.prop2 == rhs.prop2
+		&& lhs.prop3 == rhs.prop3
+		&& lhs.prop4 == rhs.prop4
 }
 
 class Response<T: Mappable>: Mappable {
 	var result: T?
 	
-	required init() {
+	required init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	func mapping(map: Map) {
-		result <= map["result"]
+		result <- map["result"]
 	}
 }
 
 class Status: Mappable {
 	var status: Int?
 	
-	required init() {
+	required init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	func mapping(map: Map) {
-		status <= map["code"]
+		status <- map["code"]
 	}
 }
 
 class Plan: Mappable {
 	var tasks: [Task]?
 	
-	required init(){
-		
+	required init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	func mapping(map: Map) {
-		tasks <= map["tasks"]
+		tasks <- map["tasks"]
 	}
 }
 
 class Task: Mappable {
 	var taskId: Int?
 	var percentage: Double?
+
+	init() {}
 	
-	required init(){
-		
+	required init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	func mapping(map: Map) {
-		taskId <= map["taskId"]
-		percentage <= map["percentage"]
+		taskId <- map["taskId"]
+		percentage <- map["percentage"]
 	}
 }
 
@@ -447,13 +524,13 @@ class TaskDictionary: Mappable {
 	var test: String?
 	var tasks: [String : Task]?
 	
-	required init(){
-		
+	required init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	func mapping(map: Map) {
-		test <= map["test"]
-		tasks <= map["tasks"]
+		test <- map["test"]
+		tasks <- map["tasks"]
 	}
 }
 
@@ -464,16 +541,18 @@ struct Student: Mappable {
 	var UUID: String?
 	var major: Int?
 	var minor: Int?
+
+	init() {}
 	
-	init(){
-		
+	init?(_ map: Map) {
+		mapping(map)
 	}
-	
+
 	mutating func mapping(map: Map) {
-		name <= map["name"]
-		UUID <= map["UUID"]
-		major <= map["major"]
-		minor <= map["minor"]
+		name <- map["name"]
+		UUID <- map["UUID"]
+		major <- map["major"]
+		minor <- map["minor"]
 	}
 }
 
@@ -495,102 +574,64 @@ class User: Mappable {
     var friendDictionary: [String : User]?
     var friend: User?
     var friends: [User]? = []
-    var birthday: NSDate = NSDate()
-    var birthdayOpt: NSDate?
-    var y2k: NSDate = NSDate()
-    var y2kOpt: NSDate?
-    var imageURL: NSURL?
-    var intWithString: Int = 0
-	var heightInCM: Double?
-	
-    required init() {
-		
-    }
-	
-	func mapping(map: Map) {
-		username         <= map["username"]
-		identifier       <= map["identifier"]
-		photoCount       <= map["photoCount"]
-		age              <= map["age"]
-		weight           <= map["weight"]
-		float            <= map["float"]
-		drinker          <= map["drinker"]
-		smoker           <= map["smoker"]
-		arr              <= map["arr"]
-		arrOptional      <= map["arrOpt"]
-		dict             <= map["dict"]
-		dictOptional     <= map["dictOpt"]
-		friend           <= map["friend"]
-		friends          <= map["friends"]
-		friendDictionary <= map["friendDictionary"]
-		dictString		 <= map["dictString"]
-		heightInCM		 <= map["height.value"]
-		birthday         <= (map["birthday"], DateTransform())
-		birthdayOpt      <= (map["birthdayOpt"], DateTransform())
-		y2k              <= (map["y2k"], ISO8601DateTransform())
-		y2kOpt           <= (map["y2kOpt"], ISO8601DateTransform())
-		imageURL         <= (map["imageURL"], URLTransform())
-		intWithString    <= (map["intWithString"], TransformOf<Int, String>(fromJSON: { $0?.toInt() }, toJSON: { $0.map { String($0) } }))
-	}
-	
-    var description : String {
-        return "username: \(username) \nid:\(identifier) \nage: \(age) \nphotoCount: \(photoCount) \ndrinker: \(drinker) \nsmoker: \(smoker) \narr: \(arr) \narrOptional: \(arrOptional) \ndict: \(dict) \ndictOptional: \(dictOptional) \nfriend: \(friend)\nfriends: \(friends) \nbirthday: \(birthday)\nbirthdayOpt: \(birthdayOpt) \ny2k: \(y2k) \ny2kOpt: \(y2k) \nweight: \(weight)"
-    }
-}
 
-class TestCollectionOfPrimitives : Mappable {
-    var dictStringString: [String: String] = [:]
-    var dictStringInt: [String: Int] = [:]
-    var dictStringBool: [String: Bool] = [:]
-    var dictStringDouble: [String: Double] = [:]
-    var dictStringFloat: [String: Float] = [:]
-    var arrayString: [String] = []
-    var arrayInt: [Int] = []
-    var arrayBool: [Bool] = []
-    var arrayDouble: [Double] = []
-    var arrayFloat: [Float] = []
-    
-    required init() {}
-    
-    func mapping(map: Map) {
-        dictStringString    <= map["dictStringString"]
-        dictStringBool      <= map["dictStringBool"]
-        dictStringInt       <= map["dictStringInt"]
-        dictStringDouble    <= map["dictStringDouble"]
-        dictStringFloat     <= map["dictStringFloat"]
-        arrayString         <= map["arrayString"]
-        arrayInt            <= map["arrayInt"]
-        arrayBool           <= map["arrayBool"]
-        arrayDouble         <= map["arrayDouble"]
-        arrayFloat          <= map["arrayFloat"]
-    }
+	init() {}
+
+	required init?(_ map: Map) {
+		mapping(map)
+	}
+
+	func mapping(map: Map) {
+		username         <- map["username"]
+		identifier       <- map["identifier"]
+		photoCount       <- map["photoCount"]
+		age              <- map["age"]
+		weight           <- map["weight"]
+		float            <- map["float"]
+		drinker          <- map["drinker"]
+		smoker           <- map["smoker"]
+		arr              <- map["arr"]
+		arrOptional      <- map["arrOpt"]
+		dict             <- map["dict"]
+		dictOptional     <- map["dictOpt"]
+		friend           <- map["friend"]
+		friends          <- map["friends"]
+		friendDictionary <- map["friendDictionary"]
+		dictString		 <- map["dictString"]
+	}
 }
 
 class Base: Mappable {
 	
 	var base: String?
+
+	init() {}
 	
-	required init(){
-		
+	required init?(_ map: Map) {
+		mapping(map)
 	}
 
 	func mapping(map: Map) {
-		base <= map["base"]
+		base <- map["base"]
 	}
 }
 
 class Subclass: Base {
 	
 	var sub: String?
-	
-	required init(){
-		
+
+	override init() {
+		super.init()
 	}
 	
+	required init?(_ map: Map) {
+		super.init(map)
+	}
+
 	override func mapping(map: Map) {
 		super.mapping(map)
 		
-		sub <= map["sub"]
+		sub <- map["sub"]
 	}
 }
 
@@ -598,16 +639,48 @@ class Subclass: Base {
 class GenericSubclass<T>: Base {
 	
 	var sub: String?
-	
-	required init(){
-		
+
+	override init() {
+		super.init()
+	}
+
+	required init?(_ map: Map) {
+		super.init(map)
 	}
 
 	override func mapping(map: Map) {
 		super.mapping(map)
 		
-		sub <= map["sub"]
+		sub <- map["sub"]
 	}
 }
 
+class WithGenericArray<T: Mappable>: Mappable {
+	var genericItems: [T]?
 
+	required init?(_ map: Map) {
+		mapping(map)
+	}
+
+	func mapping(map: Map) {
+		genericItems <- map["genericItems"]
+	}
+}
+
+class ConcreteItem: Mappable {
+	var value: String?
+
+	required init?(_ map: Map) {
+		mapping(map)
+	}
+
+	func mapping(map: Map) {
+		value <- map["value"]
+	}
+}
+
+class SubclassWithGenericArrayInSuperclass<Unused>: WithGenericArray<ConcreteItem> {
+	required init?(_ map: Map) {
+		super.init(map)
+	}
+}
