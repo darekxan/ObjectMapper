@@ -85,7 +85,7 @@ public final class Map {
 /**
 * Fetch value from JSON dictionary, loop through them until we reach the desired object.
 */
-private func valueFor(keyPathComponents: [String], dictionary: [String : AnyObject]) -> AnyObject? {
+private func valueFor(keyPathComponents: [String], _ dictionary: [String : AnyObject]) -> AnyObject? {
 	// Implement it as a tail recursive function.
 
 	if keyPathComponents.isEmpty {
@@ -242,15 +242,15 @@ public final class Mapper<N: Mappable> {
 	* Maps a JSON dictionary of dictionaries to a dictionary of objects that conform to Mappable.
 	*/
 	public func mapDictionary(JSONDictionary: [String : [String : AnyObject]]) -> [String : N] {
-		return reduce(JSONDictionary, [String: N]()) { (var values, element) in
-			let (key, value) = element
-
-			// map every value in dictionary to type N
-			if let newValue = self.map(value) {
-				values[key] = newValue
-			}
-			return values
-		}
+        return JSONDictionary.reduce([String: N]()) { (var values, element) in
+            let (key, value) = element
+            
+            // map every value in dictionary to type N
+            if let newValue = self.map(value) {
+                values[key] = newValue
+            }
+            return values
+        }
 	}
 
 	// MARK: Functions that create JSON from objects
@@ -290,18 +290,18 @@ public final class Mapper<N: Mappable> {
 	public func toJSONString(object: N, prettyPrint: Bool) -> String? {
 		let JSONDict = toJSON(object)
 
-		var err: NSError?
-		if NSJSONSerialization.isValidJSONObject(JSONDict) {
-			let options: NSJSONWritingOptions = prettyPrint ? .PrettyPrinted : .allZeros
-			let JSONData: NSData? = NSJSONSerialization.dataWithJSONObject(JSONDict, options: options, error: &err)
-			if let error = err {
-				println(error)
-			}
+        do {
+            if NSJSONSerialization.isValidJSONObject(JSONDict) {
+                let options = prettyPrint ? NSJSONWritingOptions.PrettyPrinted : NSJSONWritingOptions()
+                let JSONData: NSData? = try NSJSONSerialization.dataWithJSONObject(JSONDict, options: options)
 
-			if let JSON = JSONData {
-				return NSString(data: JSON, encoding: NSUTF8StringEncoding) as? String
-			}
-		}
+                if let JSON = JSONData {
+                    return NSString(data: JSON, encoding: NSUTF8StringEncoding) as? String
+                }
+            }
+        } catch {
+            //TODO: handle it in some way
+        }
 
 		return nil
 	}
@@ -332,13 +332,15 @@ public final class Mapper<N: Mappable> {
 	*/
 	private func parseJSONString(JSON: String) -> AnyObject? {
 		let data = JSON.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
-		if let data = data {
-			var error: NSError?
-			let parsedJSON: AnyObject? = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.AllowFragments, error: &error)
-			return parsedJSON
-		}
-
-		return nil
+        do {
+            if let data = data {
+                return try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.AllowFragments)
+            }
+        } catch {
+            //TODO: handle it in some way
+        }
+        
+        return nil
 	}
 }
 
